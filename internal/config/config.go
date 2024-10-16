@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -12,40 +11,56 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func Read() Config {
-	data, err := os.ReadFile(getConfigPath())
+func Read() (Config, error) {
+	path, err := getConfigPath()
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Config{}, err
+	}
+
 	config := Config{}
 	err = json.Unmarshal(data, &config)
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, err
 	}
-	return config
+
+	return config, nil
 }
 
-func (c Config) SetUser(name string) {
+func (c Config) SetUser(name string) error {
 	c.CurrentUserName = name
+
 	configJson, err := json.Marshal(c)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	writeConfig(configJson)
+	return nil
 }
 
-func getConfigPath() string {
+func getConfigPath() (string, error) {
 	root, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return filepath.Join(root, configFileName)
+	return filepath.Join(root, configFileName), nil
 }
 
-func writeConfig(configJson []byte) {
-	path := getConfigPath()
-	permissions := os.FileMode(0600)
-	if err := os.WriteFile(path, configJson, permissions); err != nil {
-		log.Fatal(err)
+func writeConfig(configJson []byte) error {
+	path, err := getConfigPath()
+	if err != nil {
+		return err
 	}
+
+	permissions := os.FileMode(0600)
+
+	if err := os.WriteFile(path, configJson, permissions); err != nil {
+		return err
+	}
+
+	return nil
 }
