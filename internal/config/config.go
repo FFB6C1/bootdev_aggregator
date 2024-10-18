@@ -34,11 +34,7 @@ func Read() (Config, error) {
 func (c Config) SetUser(name string) error {
 	c.CurrentUserName = name
 
-	configJson, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-	writeConfig(configJson)
+	writeConfig(c)
 	return nil
 }
 
@@ -50,15 +46,20 @@ func getConfigPath() (string, error) {
 	return filepath.Join(root, configFileName), nil
 }
 
-func writeConfig(configJson []byte) error {
+func writeConfig(config Config) error {
 	path, err := getConfigPath()
 	if err != nil {
 		return err
 	}
 
-	permissions := os.FileMode(0600)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-	if err := os.WriteFile(path, configJson, permissions); err != nil {
+	encoder := json.NewEncoder(file)
+	if err = encoder.Encode(config); err != nil {
 		return err
 	}
 

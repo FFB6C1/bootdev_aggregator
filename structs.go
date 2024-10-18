@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	"github.com/ffb6c1/bootdev_aggregator/internal/config"
+	"github.com/ffb6c1/bootdev_aggregator/internal/database"
 )
 
 type state struct {
+	db     *database.Queries
 	config *config.Config
 }
 
