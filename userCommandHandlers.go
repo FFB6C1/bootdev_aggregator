@@ -57,7 +57,7 @@ func handlerReset(s *state, cmd command) error {
 	return nil
 }
 
-func handlerUsers(s *state, cmd command) error {
+func handlerUsers(s *state, _ command) error {
 	users, err := s.db.GetUsers(context.Background())
 	if err != nil {
 		fmt.Println("handlerList err:", err)
@@ -71,4 +71,17 @@ func handlerUsers(s *state, cmd command) error {
 		}
 	}
 	return nil
+}
+
+func helperMapUsersUUIDtoNames(s *state) map[uuid.UUID]string {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		fmt.Println("helperMapUsersUUIDtoNames err:", err)
+		os.Exit(1)
+	}
+	userMap := map[uuid.UUID]string{}
+	for _, user := range users {
+		userMap[user.ID] = user.Name
+	}
+	return userMap
 }

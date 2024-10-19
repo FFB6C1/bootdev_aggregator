@@ -30,10 +30,8 @@ func main() {
 	cmds := commands{
 		cmds: map[string]func(*state, command) error{},
 	}
-	cmds.register("login", handlerLogin)
-	cmds.register("register", handlerRegister)
-	cmds.register("reset", handlerReset)
-	cmds.register("users", handlerUsers)
+	registerCommands(cmds)
+
 	if len(os.Args) < 2 {
 		err := fmt.Errorf("Insufficient Arguments. Please use a command name.")
 		log.Fatal(err)
