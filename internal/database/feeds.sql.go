@@ -22,7 +22,7 @@ VALUES (
     $5,
     $6
 )
-RETURNING id, created_at, updated_at, name, url, user_id
+RETURNING id, created_at, updated_at, name, url, user_id, last_fetched_at
 `
 
 type AddFeedParams struct {
@@ -60,7 +60,7 @@ func (q *Queries) GetFeedIDByURL(ctx context.Context, url string) (uuid.UUID, er
 }
 
 const getFeeds = `-- name: GetFeeds :many
-SELECT id, created_at, updated_at, name, url, user_id 
+SELECT id, created_at, updated_at, name, url, user_id, last_fetched_at 
 FROM feeds
 `
 
@@ -80,6 +80,7 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]Feed, error) {
 			&i.Name,
 			&i.Url,
 			&i.UserID,
+			&i.LastFetchedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -92,4 +93,37 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]Feed, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getNextFeed = `-- name: GetNextFeed :one
+SELECT feeds.url AS url
+FROM feeds
+INNER JOIN feed_follows
+ON feeds.id = feed_follows.feed_id
+WHERE feed_follows.user_id = $1
+ORDER BY last_fetched_at ASC NULLS FIRST
+LIMIT 1
+`
+
+func (q *Queries) GetNextFeed(ctx context.Context, userID uuid.UUID) (string, error) {
+	row := q.db.QueryRowContext(ctx, getNextFeed, userID)
+	var url string
+	err := row.Scan(&url)
+	return url, err
+}
+
+const markFetchedByURL = `-- name: MarkFetchedByURL :exec
+UPDATE feeds
+SET updated_at = $2, last_fetched_at = $2
+WHERE url = $1
+`
+
+type MarkFetchedByURLParams struct {
+	Url       string
+	UpdatedAt time.Time
+}
+
+func (q *Queries) MarkFetchedByURL(ctx context.Context, arg MarkFetchedByURLParams) error {
+	_, err := q.db.ExecContext(ctx, markFetchedByURL, arg.Url, arg.UpdatedAt)
+	return err
 }

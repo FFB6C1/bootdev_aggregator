@@ -1,2 +1,2 @@
-# bootdev_aggregator
+# gator
 Blog aggregator project for boot.dev.

@@ -11,4 +11,5 @@ func registerCommands(cmds commands) {
 	cmds.register("follow", checkLoggedIn(handlerFollow))
 	cmds.register("following", checkLoggedIn(handlerFollowing))
 	cmds.register("unfollow", checkLoggedIn(handlerUnfollow))
+	cmds.register("browse", checkLoggedIn(handlerBrowse))
 }

@@ -18,7 +18,7 @@ func FetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	}
 	res, err := getFeedResponse(req)
 	if err != nil {
-		fmt.Println("Error getting response:", err)
+		fmt.Println("Error getting response:", feedURL, err)
 		os.Exit(1)
 	}
 	data, err := readFeedResponse(res)
