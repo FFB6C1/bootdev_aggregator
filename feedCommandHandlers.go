@@ -168,7 +168,7 @@ func handlerFeeds(s *state, _ command) error {
 		return fmt.Errorf("handlerFeeds: %w", err)
 	}
 	for _, feed := range feeds {
-		fmt.Printf("%s - %s - %s/n", feed.Name, feed.Url, users[feed.UserID])
+		fmt.Printf("%s - %s - %s\n", feed.Name, feed.Url, users[feed.UserID])
 	}
 	return nil
 }
