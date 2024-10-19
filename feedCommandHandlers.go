@@ -21,15 +21,9 @@ func handlerAgg(_ *state, _ command) error {
 	return nil
 }
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) < 2 {
 		return fmt.Errorf("handlerAddFeed: insufficient arguments")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		err := fmt.Errorf("handlerAddFeed: not logged in")
-		return err
 	}
 
 	feed := database.AddFeedParams{
@@ -41,9 +35,22 @@ func handlerAddFeed(s *state, cmd command) error {
 		UserID:    user.ID,
 	}
 
+	feedFollow := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		FeedID:    feed.ID,
+		UserID:    user.ID,
+	}
+
 	if err := s.db.AddFeed(context.Background(), feed); err != nil {
 		return fmt.Errorf("handlerAddFeed: %w", err)
 	}
+
+	if _, err := s.db.CreateFeedFollow(context.Background(), feedFollow); err != nil {
+		return fmt.Errorf("handlerAddFeed: %w", err)
+	}
+
 	fmt.Println(feed)
 	return nil
 }
