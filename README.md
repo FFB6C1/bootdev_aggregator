@@ -5,6 +5,7 @@ Blog aggregator project for boot.dev.
 ## requirements
 
 -Postgres
+
 -Go
 
 ## installation
